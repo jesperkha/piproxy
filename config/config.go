@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/joho/godotenv"
+	"github.com/echo-webkom/cenv"
 )
 
 type Config struct {
@@ -21,7 +21,7 @@ func ensure(k string) string {
 }
 
 func Load() Config {
-	if err := godotenv.Load(); err != nil {
+	if err := cenv.Load(); err != nil {
 		log.Fatal(err)
 	}
 
