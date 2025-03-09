@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"net/url"
@@ -30,6 +31,10 @@ func (s *Server) RegisterServices(services []service.Service) error {
 		serviceUrl, err := url.Parse(serv.Url)
 		if err != nil {
 			return err
+		}
+
+		if serv.Endpoint[0] != '/' {
+			return fmt.Errorf("endpoint must start with '/': %s", serv.Endpoint)
 		}
 
 		s.register(serv.Endpoint, serviceUrl)
