@@ -10,6 +10,7 @@ import (
 
 	"github.com/jesperkha/piproxy/config"
 	"github.com/jesperkha/piproxy/server"
+	"github.com/jesperkha/piproxy/service"
 )
 
 func main() {
@@ -19,7 +20,12 @@ func main() {
 	var wg sync.WaitGroup
 
 	s := server.New(config)
-	if err := s.RegisterServices(); err != nil {
+	services, err := service.Load(config.ServiceFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err := s.RegisterServices(services); err != nil {
 		log.Fatal(err)
 	}
 

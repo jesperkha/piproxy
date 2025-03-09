@@ -25,12 +25,7 @@ func New(config config.Config) *Server {
 	}
 }
 
-func (s *Server) RegisterServices() error {
-	services, err := service.Load(s.config.ServiceFile)
-	if err != nil {
-		return err
-	}
-
+func (s *Server) RegisterServices(services []service.Service) error {
 	for _, serv := range services {
 		serviceUrl, err := url.Parse(serv.Url)
 		if err != nil {
