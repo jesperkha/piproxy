@@ -1,11 +1,9 @@
 package test
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"sync"
 	"testing"
 
 	"github.com/jesperkha/piproxy/config"
@@ -39,18 +37,15 @@ func TestProxy(t *testing.T) {
 		Port: ":8080",
 	}
 
-	var wg sync.WaitGroup
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
 	services, servers := createServices()
 
-	server := server.New(config)
-	if err := server.RegisterServices(services); err != nil {
+	s := server.New(config)
+	if err := s.RegisterServices(services); err != nil {
 		t.Fatal(err)
 	}
 
-	go server.ListenAndServe(ctx, &wg)
+	notif := server.NewNotifier()
+	go s.ListenAndServe(notif)
 
 	for _, s := range services {
 		res, err := http.Get(fmt.Sprintf("http://localhost%s%s", config.Port, s.Endpoint))
@@ -74,8 +69,7 @@ func TestProxy(t *testing.T) {
 		// }
 	}
 
-	cancel()
-	wg.Wait()
+	notif.NofifyAndWait()
 
 	for _, s := range servers {
 		s.Close()

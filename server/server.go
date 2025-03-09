@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"sync"
 
 	"maps"
 
@@ -44,8 +43,8 @@ func (s *Server) RegisterServices(services []service.Service) error {
 	return nil
 }
 
-func (s *Server) ListenAndServe(ctx context.Context, wg *sync.WaitGroup) {
-	wg.Add(1)
+func (s *Server) ListenAndServe(notif *Notifier) {
+	done, finish := notif.Register()
 
 	server := &http.Server{
 		Addr:    s.config.Port,
@@ -53,13 +52,13 @@ func (s *Server) ListenAndServe(ctx context.Context, wg *sync.WaitGroup) {
 	}
 
 	go func() {
-		<-ctx.Done()
-		if err := server.Shutdown(ctx); err != nil {
+		<-done
+		if err := server.Shutdown(context.Background()); err != nil {
 			log.Fatal(err)
 		}
 
+		finish()
 		log.Println("server shutdown")
-		wg.Done()
 	}()
 
 	log.Printf("listening at localhost%s", s.config.Port)

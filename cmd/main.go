@@ -1,11 +1,9 @@
 package main
 
 import (
-	"context"
 	"log"
 	"os"
 	"os/signal"
-	"sync"
 	"syscall"
 
 	"github.com/jesperkha/piproxy/config"
@@ -15,9 +13,6 @@ import (
 
 func main() {
 	config := config.Load()
-
-	ctx, cancel := context.WithCancel(context.Background())
-	var wg sync.WaitGroup
 
 	s := server.New(config)
 	services, err := service.Load(config.ServiceFile)
@@ -29,14 +24,14 @@ func main() {
 		log.Fatal(err)
 	}
 
-	go s.ListenAndServe(ctx, &wg)
+	notif := server.NewNotifier()
+	go s.ListenAndServe(notif)
 
 	sigchan := make(chan os.Signal, 1)
 	signal.Notify(sigchan, os.Interrupt, syscall.SIGTERM)
 
 	<-sigchan
-	cancel()
+	notif.NofifyAndWait()
 
 	log.Println("piproxy shutting down")
-	wg.Wait()
 }
