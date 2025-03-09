@@ -19,6 +19,10 @@ func main() {
 	var wg sync.WaitGroup
 
 	s := server.New(config)
+	if err := s.RegisterServices(); err != nil {
+		log.Fatal(err)
+	}
+
 	go s.ListenAndServe(ctx, &wg)
 
 	sigchan := make(chan os.Signal, 1)

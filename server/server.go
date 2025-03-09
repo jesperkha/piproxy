@@ -10,6 +10,7 @@ import (
 	"maps"
 
 	"github.com/jesperkha/piproxy/config"
+	"github.com/jesperkha/piproxy/service"
 )
 
 type Server struct {
@@ -22,6 +23,25 @@ func New(config config.Config) *Server {
 		config: config,
 		mux:    http.NewServeMux(),
 	}
+}
+
+func (s *Server) RegisterServices() error {
+	services, err := service.Load(s.config.ServiceFile)
+	if err != nil {
+		return err
+	}
+
+	for _, serv := range services {
+		serviceUrl, err := url.Parse(serv.Url)
+		if err != nil {
+			return err
+		}
+
+		s.register(serv.Endpoint, serviceUrl)
+		log.Printf("registered service: %s", serv.Name)
+	}
+
+	return nil
 }
 
 func (s *Server) ListenAndServe(ctx context.Context, wg *sync.WaitGroup) {
@@ -42,22 +62,16 @@ func (s *Server) ListenAndServe(ctx context.Context, wg *sync.WaitGroup) {
 		wg.Done()
 	}()
 
-	s.mux.HandleFunc("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello"))
-	}))
-
-	log.Printf("listening at localhost:%s", s.config.Port)
+	log.Printf("listening at localhost%s", s.config.Port)
 	server.ListenAndServe()
 }
 
-func (s *Server) register(path string, host string) {
-	localUrl, err := url.Parse(host)
-	if err != nil {
-		log.Fatal(err)
-	}
-
+func (s *Server) register(path string, serviceUrl *url.URL) {
 	s.mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
-		redirectTo(r.URL, localUrl)
+		from := r.URL.String()
+		redirectTo(r.URL, serviceUrl)
+
+		log.Printf("new request: %s -> %s", from, r.URL.String())
 
 		proxy := http.DefaultTransport
 		res, err := proxy.RoundTrip(r)
@@ -69,12 +83,12 @@ func (s *Server) register(path string, host string) {
 
 		defer res.Body.Close()
 
-		maps.Copy(w.Header(), res.Header)
-		w.WriteHeader(res.StatusCode)
-
 		if err := res.Write(w); err != nil {
 			log.Println(err)
 			w.WriteHeader(http.StatusInternalServerError)
+			return
 		}
+
+		maps.Copy(w.Header(), res.Header)
 	})
 }

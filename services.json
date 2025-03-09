@@ -1,0 +1,7 @@
+[
+	{
+		"name": "test",
+		"url": "http://localhost:12345",
+		"endpoint": "/test"
+	}
+]
