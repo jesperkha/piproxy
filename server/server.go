@@ -57,8 +57,8 @@ func (s *Server) ListenAndServe(notif *Notifier) {
 			log.Fatal(err)
 		}
 
-		finish()
 		log.Println("server shutdown")
+		finish()
 	}()
 
 	log.Printf("listening at localhost%s", s.config.Port)
