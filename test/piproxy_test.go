@@ -69,7 +69,7 @@ func TestProxy(t *testing.T) {
 		// }
 	}
 
-	notif.NofifyAndWait()
+	notif.NotifyAndWait()
 
 	for _, s := range servers {
 		s.Close()

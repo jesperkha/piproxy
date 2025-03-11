@@ -31,7 +31,7 @@ func main() {
 	signal.Notify(sigchan, os.Interrupt, syscall.SIGTERM)
 
 	<-sigchan
-	notif.NofifyAndWait()
+	notif.NotifyAndWait()
 
 	log.Println("piproxy shutting down")
 }

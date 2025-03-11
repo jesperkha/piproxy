@@ -27,7 +27,7 @@ func (n *Notifier) Register() (doneChan <-chan struct{}, finish func()) {
 	}
 }
 
-func (n *Notifier) NofifyAndWait() {
+func (n *Notifier) NotifyAndWait() {
 	n.cancel()
 	n.wg.Wait()
 }

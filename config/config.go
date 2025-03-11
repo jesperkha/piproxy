@@ -25,13 +25,13 @@ func Load() Config {
 		log.Fatal(err)
 	}
 
-	port := ensure("PORT")
+	port := os.Getenv("PORT")
 	if port[0] != ':' {
 		port = ":" + port
 	}
 
 	return Config{
 		Port:        port,
-		ServiceFile: ensure("SERVICE_PATH"),
+		ServiceFile: os.Getenv("SERVICE_FILE"),
 	}
 }
