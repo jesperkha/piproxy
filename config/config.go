@@ -12,14 +12,6 @@ type Config struct {
 	ServiceFile string
 }
 
-func ensure(k string) string {
-	v := os.Getenv(k)
-	if v == "" {
-		log.Fatalf("missing '%s' environment variable", k)
-	}
-	return v
-}
-
 func Load() Config {
 	if err := cenv.Load(); err != nil {
 		log.Fatal(err)
@@ -32,6 +24,6 @@ func Load() Config {
 
 	return Config{
 		Port:        port,
-		ServiceFile: os.Getenv("SERVICE_FILE"),
+		ServiceFile: os.Getenv("SERVICE_PATH"),
 	}
 }
