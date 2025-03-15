@@ -9,6 +9,7 @@ import (
 
 	"maps"
 
+	"github.com/jesperkha/notifier"
 	"github.com/jesperkha/piproxy/config"
 	"github.com/jesperkha/piproxy/service"
 )
@@ -43,7 +44,7 @@ func (s *Server) RegisterServices(services []service.Service) error {
 	return nil
 }
 
-func (s *Server) ListenAndServe(notif *Notifier) {
+func (s *Server) ListenAndServe(notif *notifier.Notifier) {
 	done, finish := notif.Register()
 
 	server := &http.Server{

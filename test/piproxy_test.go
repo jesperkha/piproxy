@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/jesperkha/notifier"
 	"github.com/jesperkha/piproxy/config"
 	"github.com/jesperkha/piproxy/server"
 	"github.com/jesperkha/piproxy/service"
@@ -44,7 +45,7 @@ func TestProxy(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	notif := server.NewNotifier()
+	notif := notifier.New()
 	go s.ListenAndServe(notif)
 
 	for _, s := range services {
