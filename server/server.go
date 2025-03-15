@@ -15,14 +15,17 @@ import (
 )
 
 type Server struct {
-	mux    *http.ServeMux
-	config config.Config
+	mux     *http.ServeMux
+	config  config.Config
+	handler http.Handler
 }
 
 func New(config config.Config) *Server {
+	mux := http.NewServeMux()
 	return &Server{
-		config: config,
-		mux:    http.NewServeMux(),
+		config:  config,
+		mux:     mux,
+		handler: mux,
 	}
 }
 
@@ -37,11 +40,17 @@ func (s *Server) RegisterServices(services []service.Service) error {
 			return fmt.Errorf("endpoint must start with '/': %s", serv.Endpoint)
 		}
 
-		s.register(serv.Endpoint, serviceUrl)
-		log.Printf("registered service: %s", serv.Name)
+		s.register(serv, serviceUrl)
+		log.Printf("server: registered service: %s for %s", serv.Name, serv.Endpoint)
 	}
 
 	return nil
+}
+
+func (s *Server) Middleware(middleware ...Middleware) {
+	for _, m := range middleware {
+		s.handler = m(s.handler)
+	}
 }
 
 func (s *Server) ListenAndServe(notif *notifier.Notifier) {
@@ -49,7 +58,7 @@ func (s *Server) ListenAndServe(notif *notifier.Notifier) {
 
 	server := &http.Server{
 		Addr:    s.config.Port,
-		Handler: s.mux,
+		Handler: s.handler,
 	}
 
 	go func() {
@@ -58,25 +67,22 @@ func (s *Server) ListenAndServe(notif *notifier.Notifier) {
 			log.Fatal(err)
 		}
 
-		log.Println("server shutdown")
+		log.Println("server: shutdown complete")
 		finish()
 	}()
 
-	log.Printf("listening at localhost%s", s.config.Port)
+	log.Printf("server: listening at localhost%s", s.config.Port)
 	server.ListenAndServe()
 }
 
-func (s *Server) register(path string, serviceUrl *url.URL) {
-	s.mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
-		from := r.URL.String()
+func (s *Server) register(serv service.Service, serviceUrl *url.URL) {
+	s.mux.HandleFunc(serv.Endpoint, func(w http.ResponseWriter, r *http.Request) {
 		redirectTo(r.URL, serviceUrl)
-
-		log.Printf("new request: %s -> %s", from, r.URL.String())
 
 		proxy := http.DefaultTransport
 		res, err := proxy.RoundTrip(r)
 		if err != nil {
-			log.Println(err)
+			log.Printf("server: '%s' failed to respond", serv.Name)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}

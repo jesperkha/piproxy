@@ -20,6 +20,7 @@ func main() {
 	}
 
 	s := server.New(config)
+	s.Middleware(server.Logger)
 	if err := s.RegisterServices(services); err != nil {
 		log.Fatal(err)
 	}
@@ -28,5 +29,5 @@ func main() {
 	go s.ListenAndServe(notif)
 
 	notif.NotifyOnSignal(os.Interrupt, syscall.SIGTERM)
-	log.Println("piproxy shutting down")
+	log.Println("piproxy: shutdown complete")
 }
