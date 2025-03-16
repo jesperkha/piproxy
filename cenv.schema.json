@@ -1,1 +1,18 @@
-{"lastUpdated":"2025-03-14T20:24:53.2532185+01:00","fields":{"PORT":{"required":true,"public":false,"lengthRequired":false,"length":0,"format":"{number}","key":"PORT","value":""},"SERVICE_PATH":{"required":true,"public":false,"lengthRequired":false,"length":0,"format":"","key":"SERVICE_PATH","value":""}}}
+{
+	"lastUpdated": "2025-03-16T14:21:55.4318449+01:00",
+	"fields": {
+		"HOST": {
+			"required": true,
+			"key": "HOST"
+		},
+		"PORT": {
+			"required": true,
+			"format": "{number}",
+			"key": "PORT"
+		},
+		"SERVICE_PATH": {
+			"required": true,
+			"key": "SERVICE_PATH"
+		}
+	}
+}

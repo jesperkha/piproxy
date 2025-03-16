@@ -2,6 +2,7 @@ package test
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -60,14 +61,14 @@ func TestProxy(t *testing.T) {
 			t.Errorf("non-ok response from %s", s.Name)
 		}
 
-		// body, err := io.ReadAll(res.Body)
-		// if err != nil {
-		// 	t.Error(err)
-		// }
+		body, err := io.ReadAll(res.Body)
+		if err != nil {
+			t.Error(err)
+		}
 
-		// if string(body) != s.Name {
-		// 	t.Errorf("expected response '%s', got '%s'", s.Name, string(body))
-		// }
+		if string(body) != s.Name {
+			t.Errorf("expected response '%s', got '%s'", s.Name, string(body))
+		}
 	}
 
 	notif.NotifyAndWait()

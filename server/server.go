@@ -38,7 +38,7 @@ func (s *Server) RegisterServices(services []service.Service) error {
 		}
 
 		if serv.Endpoint[0] != '/' {
-			return fmt.Errorf("endpoint must start with '/': %s", serv.Endpoint)
+			return fmt.Errorf("server: endpoint must start with '/': %s", serv.Endpoint)
 		}
 
 		s.register(serv, serviceUrl)
@@ -72,7 +72,7 @@ func (s *Server) ListenAndServe(notif *notifier.Notifier) {
 		finish()
 	}()
 
-	log.Printf("server: listening at localhost%s", s.config.Port)
+	log.Printf("server: listening at %s%s", s.config.Host, s.config.Port)
 	server.ListenAndServe()
 }
 

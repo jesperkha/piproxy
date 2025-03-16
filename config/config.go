@@ -9,6 +9,7 @@ import (
 
 type Config struct {
 	Port        string
+	Host        string
 	ServiceFile string
 }
 
@@ -24,6 +25,7 @@ func Load() Config {
 
 	return Config{
 		Port:        port,
+		Host:        os.Getenv("HOST"),
 		ServiceFile: os.Getenv("SERVICE_PATH"),
 	}
 }
