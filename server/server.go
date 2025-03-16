@@ -30,18 +30,29 @@ func New(config config.Config) *Server {
 	}
 }
 
+func (s *Server) RegisterService(name string, url string, endpoint string, run func()) error {
+	err := s.RegisterServices([]service.Service{
+		{
+			Name:     name,
+			Url:      url,
+			Endpoint: endpoint,
+		},
+	})
+
+	if err != nil {
+		return err
+	}
+
+	run()
+	return nil
+}
+
 func (s *Server) RegisterServices(services []service.Service) error {
 	for _, serv := range services {
-		serviceUrl, err := url.Parse(serv.Url)
-		if err != nil {
+		if err := s.register(serv); err != nil {
 			return err
 		}
 
-		if serv.Endpoint[0] != '/' {
-			return fmt.Errorf("server: endpoint must start with '/': %s", serv.Endpoint)
-		}
-
-		s.register(serv, serviceUrl)
 		log.Printf("server: registered service: %s for %s", serv.Name, serv.Endpoint)
 	}
 
@@ -65,7 +76,7 @@ func (s *Server) ListenAndServe(notif *notifier.Notifier) {
 	go func() {
 		<-done
 		if err := server.Shutdown(context.Background()); err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
 
 		log.Println("server: shutdown complete")
@@ -86,7 +97,16 @@ func (s *Server) handle(path string, f func(w http.ResponseWriter, r *http.Reque
 	})
 }
 
-func (s *Server) register(serv service.Service, serviceUrl *url.URL) {
+func (s *Server) register(serv service.Service) error {
+	serviceUrl, err := url.Parse(serv.Url)
+	if err != nil {
+		return err
+	}
+
+	if serv.Endpoint[0] != '/' {
+		return fmt.Errorf("server: endpoint must start with '/': %s", serv.Endpoint)
+	}
+
 	s.handle(serv.Endpoint, func(w http.ResponseWriter, r *http.Request) (int, error) {
 		redirectTo(r.URL, serviceUrl)
 		serverError := http.StatusInternalServerError
@@ -110,4 +130,6 @@ func (s *Server) register(serv service.Service, serviceUrl *url.URL) {
 		maps.Copy(w.Header(), res.Header)
 		return http.StatusOK, nil
 	})
+
+	return nil
 }
