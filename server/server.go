@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -75,26 +76,38 @@ func (s *Server) ListenAndServe(notif *notifier.Notifier) {
 	server.ListenAndServe()
 }
 
-func (s *Server) register(serv service.Service, serviceUrl *url.URL) {
-	s.mux.HandleFunc(serv.Endpoint, func(w http.ResponseWriter, r *http.Request) {
-		redirectTo(r.URL, serviceUrl)
-
-		proxy := http.DefaultTransport
-		res, err := proxy.RoundTrip(r)
+func (s *Server) handle(path string, f func(w http.ResponseWriter, r *http.Request) (int, error)) {
+	s.mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+		status, err := f(w, r)
 		if err != nil {
-			log.Printf("server: '%s' failed to respond", serv.Name)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
+			log.Println(err)
+			w.WriteHeader(status)
+		}
+	})
+}
+
+func (s *Server) register(serv service.Service, serviceUrl *url.URL) {
+	s.handle(serv.Endpoint, func(w http.ResponseWriter, r *http.Request) (int, error) {
+		redirectTo(r.URL, serviceUrl)
+		serverError := http.StatusInternalServerError
+
+		res, err := http.DefaultTransport.RoundTrip(r)
+		if err != nil {
+			return serverError, fmt.Errorf("server: '%s' failed to respond", serv.Name)
 		}
 
 		defer res.Body.Close()
 
-		if err := res.Write(w); err != nil {
-			log.Println(err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
+		body, err := io.ReadAll(res.Body)
+		if err != nil {
+			return serverError, fmt.Errorf("server: failed to read request body")
+		}
+
+		if _, err := w.Write(body); err != nil {
+			return serverError, fmt.Errorf("server: failed to write request body")
 		}
 
 		maps.Copy(w.Header(), res.Header)
+		return http.StatusOK, nil
 	})
 }
