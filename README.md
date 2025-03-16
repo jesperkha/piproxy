@@ -4,11 +4,10 @@ Reverse proxy for my rpi5
 
 ## Use
 
-Create `services.json`:
+Create `services.json`. Example with a website server service:
 
 ```json
 [
-	// Example website server service
 	{
 		"name": "My website",
 		"url": "http://localhost:8080",
@@ -17,7 +16,11 @@ Create `services.json`:
 ]
 ```
 
-Run `cenv fix` and fill in the empty fields. `SERVICE_PATH` should be `services.json`. `HOST` is either `localhost` for testing or the exposed rpi host name `<host>.local`.
+Run `cenv fix` and fill in the empty fields.
+
+- `SERVICE_PATH` should be `services.json`
+- `HOST` is either `localhost` for testing or the exposed rpi host name `<host>.local`.
+- `PORT` is the port the proxy listens to
 
 Start the services and run `go run cmd/main.go`.
 
