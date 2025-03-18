@@ -30,7 +30,7 @@ func main() {
 	}
 
 	s.RegisterService("sysinfo", fmt.Sprintf("http://%s:5500", config.Host), "/sysinfo", func() {
-		go sysinfo.Run(config.Host, ":5500", notif)
+		go sysinfo.Run(":5500", notif)
 	})
 
 	go s.ListenAndServe(notif)
