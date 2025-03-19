@@ -16,9 +16,10 @@ import (
 )
 
 type Server struct {
-	mux     *http.ServeMux
-	config  config.Config
-	handler http.Handler
+	mux      *http.ServeMux
+	config   config.Config
+	handler  http.Handler
+	services []service.Service
 }
 
 func New(config config.Config) *Server {
@@ -28,6 +29,10 @@ func New(config config.Config) *Server {
 		mux:     mux,
 		handler: mux,
 	}
+}
+
+func (s *Server) Services() []service.Service {
+	return s.services
 }
 
 func (s *Server) RegisterService(name string, url string, endpoint string, run func()) error {
@@ -56,6 +61,7 @@ func (s *Server) RegisterServices(services []service.Service) error {
 		log.Printf("server: registered service: %s for %s", serv.Name, serv.Endpoint)
 	}
 
+	s.services = append(s.services, services...)
 	return nil
 }
 
