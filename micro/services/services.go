@@ -14,7 +14,7 @@ func Run(port string, notif *notifier.Notifier, server *server.Server) {
 
 	m.Handle("/", func(w http.ResponseWriter, r *http.Request) {
 		s := server.Services()
-		b, err := json.Marshal(s)
+		b, err := json.MarshalIndent(s, "", "\t")
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return

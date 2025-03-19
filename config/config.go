@@ -11,6 +11,7 @@ type Config struct {
 	Port        string
 	Host        string
 	ServiceFile string
+	LogFile     string
 }
 
 func Load() Config {
@@ -27,5 +28,6 @@ func Load() Config {
 		Port:        port,
 		Host:        os.Getenv("HOST"),
 		ServiceFile: os.Getenv("SERVICE_PATH"),
+		LogFile:     os.Getenv("LOG_FILE"),
 	}
 }

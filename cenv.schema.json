@@ -1,9 +1,13 @@
 {
-	"lastUpdated": "2025-03-16T14:21:55.4318449+01:00",
+	"lastUpdated": "2025-03-19T21:03:59.7359828+01:00",
 	"fields": {
 		"HOST": {
 			"required": true,
 			"key": "HOST"
+		},
+		"LOG_FILE": {
+			"required": true,
+			"key": "LOG_FILE"
 		},
 		"PORT": {
 			"required": true,

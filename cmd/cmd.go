@@ -12,10 +12,18 @@ import (
 )
 
 func Run() {
-	parseFlags()
-
+	flags := parseFlags()
 	config := config.Load()
-	notif := notifier.New()
+
+	if flags.LogFile {
+		logFile, err := os.OpenFile(config.LogFile, os.O_CREATE|os.O_TRUNC|os.O_APPEND, 0666)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		log.SetOutput(logFile)
+		defer logFile.Close()
+	}
 
 	s := server.New(config)
 	s.Middleware(server.Logger)
@@ -28,6 +36,8 @@ func Run() {
 	if err := s.RegisterServices(servs); err != nil {
 		log.Fatal(err)
 	}
+
+	notif := notifier.New()
 
 	runMicroServices(s, notif, config)
 	go s.ListenAndServe(notif)
